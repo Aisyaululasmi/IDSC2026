@@ -1,0 +1,32 @@
+# Data — raw ECG files are large; processed arrays are reproducible
+data/raw/
+data/processed/*.npz
+data/processed/*.parquet
+
+# Trained model weights & predictions (large binaries)
+models/*.pt
+models/*.pkl
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.eggs/
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environments
+.env
+.venv/
+env/
+
+# Claude Code local settings
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
