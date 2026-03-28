@@ -74,9 +74,13 @@ jupyter notebook
 | **RNN1D** | Deep Learning | `BCEWithLogitsLoss` with `pos_weight` + augmentation |
 
 **1D ResNet architecture**: Stem (Conv1d k=15, s=2 → MaxPool) → 4 residual stages (64→128→256→512 channels) → GlobalAvgPool → FC(1). ~1.4 M parameters.
+
 **CNN1D architecture**: Stem (Conv1d k=15, s=2 → MaxPool) → 3 convolutional blocks (k=7) with BatchNorm, ReLU, and Dropout, with channel progression 64→128→256 and downsampling via stride-2 convolutions → GlobalAvgPool → FC(1). ~328.2 K parameters.
+
 **LSTM1D architecture**: Input sequence → 2-layer LSTM (hidden size 64) → temporal GlobalAvgPool → Fully connected head (64→32→1) with ReLU and Dropout. ~55.3 K parameters.
+
 **BiLSTM1D architecture**: Input sequence → 2-layer bidirectional LSTM (hidden size 64 per direction) → temporal GlobalAvgPool → Fully connected head (128→32→1) with ReLU and Dropout. ~143.4 K parameters.
+
 **RNN1D architecture**: Input sequence → 2-layer RNN (hidden size 64) → temporal GlobalAvgPool → Fully connected head (64→32→1) with ReLU and Dropout. ~15.4 K parameters.
 
 
