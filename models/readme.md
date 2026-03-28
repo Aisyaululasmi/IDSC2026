@@ -1,6 +1,6 @@
 # 📦 Model Weights Setup
 
-Due to size limitations, the trained model weights are **not included directly in this repository**.
+Due to limitations, the trained model weights are **not included directly in this repository**.
 
 ## 🔽 Download Model Weights
 
