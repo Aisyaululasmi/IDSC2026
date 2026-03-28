@@ -42,7 +42,7 @@ jupyter notebook
 |---|---|
 | `01_eda.ipynb` | Exploratory data analysis — class distribution, ECG visualisation, signal quality |
 | `02_preprocessing.ipynb` | Filter pipeline → normalisation → stratified splits → save `data/processed/*.npz` |
-| `03_training.ipynb` | Feature extraction → Logistic Regression → Random Forest (GridSearchCV) → 1D ResNet training |
+| `03_training.ipynb` | Feature extraction → Logistic Regression → Random Forest (GridSearchCV) → 1D ResNet, CNN1D, Recurrent-based model training |
 | `04_evaluation.ipynb` | Test-set metrics, threshold optimisation, ROC/PR curves, confusion matrices, error analysis |
 | `05_interpretability.ipynb` | SHAP (Random Forest), GradCAM (ResNet1D), ECG saliency overlays, lead importance |
 
@@ -68,8 +68,17 @@ jupyter notebook
 | Logistic Regression | Classical ML | Class weights |
 | Random Forest | Classical ML | `class_weight='balanced'` + GridSearchCV |
 | **1D ResNet** (primary) | Deep Learning | `BCEWithLogitsLoss` with `pos_weight` + augmentation |
+| **CNN1D** | Deep Learning | `BCEWithLogitsLoss` with `pos_weight` + augmentation |
+| **LSTM1D** | Deep Learning | `BCEWithLogitsLoss` with `pos_weight` + augmentation |
+| **BiLSTM1D** | Deep Learning | `BCEWithLogitsLoss` with `pos_weight` + augmentation |
+| **RNN1D** | Deep Learning | `BCEWithLogitsLoss` with `pos_weight` + augmentation |
 
 **1D ResNet architecture**: Stem (Conv1d k=15, s=2 → MaxPool) → 4 residual stages (64→128→256→512 channels) → GlobalAvgPool → FC(1). ~1.4 M parameters.
+**CNN1D architecture**: Stem (Conv1d k=15, s=2 → MaxPool) → 3 convolutional blocks (k=7) with BatchNorm, ReLU, and Dropout, with channel progression 64→128→256 and downsampling via stride-2 convolutions → GlobalAvgPool → FC(1). ~328.2 K parameters.
+**LSTM1D architecture**: Input sequence → 2-layer LSTM (hidden size 64) → temporal GlobalAvgPool → Fully connected head (64→32→1) with ReLU and Dropout. ~55.3 K parameters.
+**BiLSTM1D architecture**: Input sequence → 2-layer bidirectional LSTM (hidden size 64 per direction) → temporal GlobalAvgPool → Fully connected head (128→32→1) with ReLU and Dropout. ~143.4 K parameters.
+**RNN1D architecture**: Input sequence → 2-layer RNN (hidden size 64) → temporal GlobalAvgPool → Fully connected head (64→32→1) with ReLU and Dropout. ~15.4 K parameters.
+
 
 **Training**: AdamW (lr=1e-3, wd=1e-4), CosineAnnealingLR, early stopping (patience=10), gradient clipping (max_norm=1.0). Augmentation: Gaussian noise + time shift + amplitude scaling.
 
@@ -85,11 +94,14 @@ Results populated after running notebooks 03 → 04.
 
 | Model | AUROC | AUPRC | Sensitivity | Specificity | F1 |
 |---|---|---|---|---|---|
-| Logistic Regression | — | — | — | — | — |
-| Random Forest | — | — | — | — | — |
-| **1D ResNet** | — | — | — | — | — |
+| Logistic Regression | 0.7345 | 0.5951 | 0.8333 | 0.3488 | 0.4000 |
+| Random Forest | 0.9341 | 0.7848 | **1.0000** | 0.7442 | 0.6857 |
+| **1D ResNet** | 0.9574 | 0.9351 | 0.9167 | **0.9302** | **0.8462** |
+| CNN1D | **0.9767** | **0.9493** | 0.9167 | 0.9070 | 0.8148 |
+| RNN1D | 0.5465 | 0.3131 | 0.5000 | 0.4884 | 0.3000 |
+| BiLSTM1D | 0.8178 | 0.5465 | 0.8333 | 0.6047 | 0.5128 |
+| LSTM1D | 0.8934 | 0.7810 | **1.0000** | 0.3721 | 0.4706 |
 
-*Fill in after training.*
 
 ---
 
@@ -100,7 +112,7 @@ IDSC/
 ├── data/
 │   ├── raw/              ← PhysioNet download (wget or wfdb)
 │   └── processed/        ← .npz splits + .parquet feature caches
-├── models/               ← best_resnet1d.pt, rf_best.pkl, lr_best.pkl, scaler.pkl
+├── models/               ← best_resnet1d.pt, best_rnn1d.pt, best_lstm1d.pt, best_cnn1d, best_bilstm1d  rf_best.pkl, lr_best.pkl, scaler.pkl, etc.
 ├── notebooks/
 │   ├── 01_eda.ipynb
 │   ├── 02_preprocessing.ipynb
@@ -116,7 +128,11 @@ IDSC/
 │   ├── dataset.py        ← PyTorch Dataset + DataLoader factory
 │   ├── models/
 │   │   ├── __init__.py
-│   │   └── resnet1d.py   ← 1D ResNet architecture
+│   │   ├── bilstm1d.py ← 1D BiLSTM architecture
+│   │   ├── cnn1d.py ← 1D CNN architecture
+│   │   ├── lstm1d.py ← 1D LSTM architecture
+│   │   ├── resnet1d.py ← 1D ResNet architecture
+│   │   └── rnn1d.py ← 1D RNN architecture  
 │   ├── train.py          ← training loop, early stopping, checkpointing
 │   └── evaluate.py       ← metrics, threshold search, plotting
 └── requirements.txt
